@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather App</title>
+        
+        <link rel="stylesheet" href="styles.css">
+    
+</head>
+<body>
+   <center> <div class="container">
+        <h1>Weather App</h1>
+        <input type="text" id="locationInput" placeholder="Enter location">
+        <button id="getWeatherButton">Get Weather</button>
+        <label for="unitSelect">Select Unit: </label>
+        <select id="unitSelect">
+            <option value="metric">Celsius</option>
+            <option value="imperial">Fahrenheit</option>
+        </select>
+        <button id="geolocationButton">Use My Location</button>
+        <div id="weatherDisplay">
+            <!-- Display weather data here -->
+        </div>
+        <div id="errorMessage">
+            <!-- Display error message here -->
+            
+        </div>
+    </div> </center>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#getWeatherButton").click(function() {
+                var location = $("#locationInput").val();
+                var apiKey = "ac1434a3f5787e52473d357d60f0b788";
+                var unit = $("#unitSelect").val();
+
+                $.ajax({
+                    url: `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=${unit}&appid=${apiKey}`,
+                    method: "GET",
+                    success: function(data) {
+                        var temperature = data.main.temp;
+                        var humidity = data.main.humidity;
+                        var windSpeed = data.wind.speed;
+                        var description = data.weather[0].description;
+
+                        var weatherInfo = `
+                            <h2>Weather in ${location}</h2>
+                            <p>Temperature: ${temperature} &deg;${unit === 'metric' ? 'C' : 'F'}</p>
+                            <p>Humidity: ${humidity}%</p>
+                            <p>Wind Speed: ${windSpeed} m/s</p>
+                            <p>Description: ${description}</p>
+                        `;
+
+                        $("#weatherDisplay").html(weatherInfo);
+                        $("#errorMessage").empty();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        $("#weatherDisplay").empty();
+                        $("#errorMessage").html("Location not found. Please try again.");
+                    }
+                });
+            });
+
+            $("#geolocationButton").click(function() {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var lat = position.coords.latitude;
+                        var lon = position.coords.longitude;
+                        var apiKey = "YOUR_API_KEY";
+                        var unit = $("#unitSelect").val();
+
+                        $.ajax({
+                            url: `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&appid=${apiKey}`,
+                            method: "GET",
+                            success: function(data) {
+                                var location = data.name;
+                                var temperature = data.main.temp;
+                                var humidity = data.main.humidity;
+                                var windSpeed = data.wind.speed;
+                                var description = data.weather[0].description;
+
+                                var weatherInfo = `
+                                    <h2>Weather in ${location}</h2>
+                                    <p>Temperature: ${temperature} &deg;${unit === 'metric' ? 'C' : 'F'}</p>
+                                    <p>Humidity: ${humidity}%</p>
+                                    <p>Wind Speed: ${windSpeed} m/s</p>
+                                    <p>Description: ${description}</p>
+                                `;
+
+                                $("#weatherDisplay").html(weatherInfo);
+                                $("#errorMessage").empty();
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                $("#weatherDisplay").empty();
+                                $("#errorMessage").html("Unable to fetch weather for your location. Please try again.");
+                            }
+                        });
+                    });
+                } else {
+                    $("#errorMessage").html("Geolocation is not supported by your browser.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
